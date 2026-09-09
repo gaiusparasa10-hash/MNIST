@@ -44,8 +44,7 @@ canvas_result = st_canvas(
 
 
 if st.button("Predict"):
-    if canvas_result.image_data is not None:
-
+    try:
         image = canvas_result.image_data.astype(np.uint8)
 
         # Convert RGBA image to grayscale
@@ -68,3 +67,6 @@ if st.button("Predict"):
 
         st.success(f"Prediction: {predicted_digit}")
         st.info(f"Confidence: {confidence:.1f}%")
+
+    except Exception as e:
+        st.error(f"Prediction error: {e}")
