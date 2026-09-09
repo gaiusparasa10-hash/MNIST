@@ -1,35 +1,38 @@
 # MNIST Handwritten Digit Recognition Web Application
 
-A simple, beginner-friendly web application that allows users to draw handwritten digits (0–9) on an interactive canvas and get real-time predictions powered by a Convolutional Neural Network (CNN) trained on the MNIST dataset.
+🚀 **[Live Demo](https://2pm9xwx3qcruqxmqh6mtv.streamlit.app/)**
 
-Built with **HTML, CSS, JavaScript** on the frontend and **Python Flask** on the backend. Fully ready for deployment on **Render**.
+A simple, beginner-friendly web application that allows users to draw handwritten digits (0–9) on an interactive canvas and get predictions powered by a Convolutional Neural Network (CNN) trained on the MNIST dataset.
+
+Built with **Python, Streamlit, TensorFlow/Keras, NumPy, and Pillow**.
+
 
 ---
 
 ## Table of Contents
+
 - [Project Overview](#project-overview)
 - [Features](#features)
 - [Technologies Used](#technologies-used)
 - [How the Machine Learning Model Works](#how-the-machine-learning-model-works)
-- [How the Frontend Works](#how-the-frontend-works)
-- [How the Flask Backend Works](#how-the-flask-backend-works)
+- [How the Web Application Works](#how-the-web-application-works)
 - [Application Workflow](#application-workflow)
 - [Project Structure](#project-structure)
 - [How to Run Locally](#how-to-run-locally)
-- [Deployment on Render](#deployment-on-render)
+- [Deployment](#deployment)
 - [Technical Interview Talking Points](#technical-interview-talking-points)
 
 ---
 
 ## Project Overview
 
-This project converts the exploratory machine learning experiments in `Project.ipynb` into an interactive, end-to-end web application. The core objective is to bridge the gap between machine learning model training and real-world deployment with clean, understandable code.
+This project converts the exploratory machine learning experiments in `Project.ipynb` into an interactive, end-to-end web application. This project demonstrates how a CNN trained on the MNIST dataset can be integrated into an interactive web application and deployed online.
 
 ---
 
 ## Features
-- **Interactive HTML5 Canvas**: Smooth drawing experience with mouse or touch support.
-- **Real-Time Prediction**: Sends drawn digits to the backend Flask API and receives instant predictions.
+- **Interactive Drawing Canvas**: Allows users to draw digits using the mouse or touch input.-
+- **Digit Prediction**: Processes the drawn digit and predicts the corresponding digit using the trained CNN model.
 - **Confidence Score Display**: Shows prediction confidence percentage alongside predicted digit.
 - **One-Click Clear**: Easily clear canvas to draw another digit.
 - **Beginner-Friendly Architecture**: Lightweight, dependency-minimal setup without bloated JS frameworks or databases.
@@ -37,10 +40,13 @@ This project converts the exploratory machine learning experiments in `Project.i
 ---
 
 ## Technologies Used
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla JS)
-- **Backend Framework**: Python Flask
-- **Machine Learning**: TensorFlow / Keras, NumPy, Pillow (PIL)
-- **Production Server**: Gunicorn (WSGI server for Render deployment)
+
+- **Frontend / UI**: Streamlit
+- **Drawing Canvas**: Streamlit Drawable Canvas
+- **Machine Learning**: TensorFlow / Keras
+- **Data Processing**: NumPy, Pillow (PIL)
+- **Dataset**: MNIST
+- **Deployment**: Streamlit Community Cloud
 
 ---
 
@@ -62,91 +68,72 @@ The machine learning logic is based directly on `Project.ipynb` (Cell 2).
 
 ---
 
-## How the Frontend Works
+## How the Web Application Works
 
-1. **HTML5 Canvas (`<canvas>`)**: Rendered at `280x280` pixels with a black background (`#000000`) and white stroke (`#ffffff`), matching the MNIST dataset appearance.
-2. **User Interaction (`script.js`)**:
-   - Listens to mouse (`mousedown`, `mousemove`, `mouseup`) and touch events (`touchstart`, `touchmove`, `touchend`).
-   - Draws white strokes with round line caps (`lineWidth = 18`).
-3. **Data Transfer**:
-   - When the user clicks **Predict**, `canvas.toDataURL('image/png')` converts the canvas drawing into a base64-encoded PNG string.
-   - A `fetch()` POST request sends `{ "image": dataUrl }` to the `/predict` API endpoint.
-4. **UI Update**: Receives JSON response and displays predicted digit and confidence score.
-
----
-
-## How the Flask Backend Works
-
-1. **Model Loading (`app.py`)**: Upon server startup, Flask loads `model.keras` into memory.
-2. **Endpoint `/predict` (POST)**:
-   - Receives JSON payload containing base64 PNG string.
-   - **Image Preprocessing Pipeline**:
-     1. Decodes base64 string into binary bytes.
-     2. Opens image using `Pillow (PIL)` and converts to Grayscale (`'L'`).
-     3. Resizes image to `28x28` pixels (matching model input shape).
-     4. Normalizes pixel values from `[0, 255]` range to `[0.0, 1.0]` by dividing by `255.0`.
-     5. Reshapes array into 4D tensor `(1, 28, 28, 1)` matching CNN input expectations.
-   - Runs `model.predict(img_tensor)` to get probability distribution across 10 classes.
-   - Finds index of maximum probability (`np.argmax()`) and formats confidence (`max_prob * 100`).
-   - Returns JSON: `{"prediction": 7, "confidence": 96.4}`.
+1. The user draws a handwritten digit on the interactive canvas.
+2. When the user clicks **Predict**, the canvas image is captured.
+3. The image is converted to grayscale.
+4. The handwritten digit is detected and cropped.
+5. Padding is added around the digit.
+6. The image is resized to `28x28` pixels.
+7. Pixel values are normalized to the range `0–1`.
+8. The processed image is passed to the trained CNN model.
+9. The model predicts one of the ten digits (`0–9`).
+10. The predicted digit and confidence score are displayed.
 
 ---
+
 
 ## Application Workflow
 
-```
+```text
 [ User Draws Digit ]
          │
          ▼
-[ Click "Predict" Button ]
+[ Click "Predict" ]
          │
          ▼
-[ Convert Canvas -> Base64 PNG ]
+[ Capture Canvas Image ]
          │
          ▼
-[ POST /predict (Flask API) ]
+[ Grayscale Conversion ]
          │
          ▼
-[ Preprocessing: Grayscale -> Resize (28x28) -> Normalize -> Reshape (1,28,28,1) ]
+[ Crop + Padding ]
          │
          ▼
-[ Model Inference (model.keras) ]
+[ Resize to 28x28 ]
          │
          ▼
-[ Return JSON: { "prediction": 7, "confidence": 96.4 } ]
+[ Normalize Pixel Values ]
          │
          ▼
-[ Update UI Display ]
+[ CNN Model Inference ]
+         │
+         ▼
+[ Prediction + Confidence ]
 ```
 
 ---
 
 ## Project Structure
 
-```
+```text
 MNIST/
 │
-├── app.py              # Main Flask web application server
-├── train_model.py      # Script to train CNN model and save model.keras
-├── Project.ipynb       # Original ML exploration notebook
-├── README.md           # Documentation & setup guide
-├── requirements.txt    # Python dependencies
-├── model.keras         # Trained CNN model file
-│
-├── templates/
-│   └── index.html      # Frontend HTML template
-│
-└── static/
-    ├── style.css       # Frontend CSS styling
-    └── script.js       # Frontend JavaScript (canvas drawing & API calls)
+├── streamlit_app.py       # Main Streamlit application
+├── train_model.py         # CNN training script
+├── Project.ipynb          # Original ML exploration notebook
+├── model.keras            # Trained CNN model
+├── requirements.txt       # Python dependencies
+├── README.md              # Project documentation
+            
 ```
-
----
 
 ## How to Run Locally
 
 ### Prerequisites
-- Python 3.9 – 3.12 installed.
+- Python 3.13 installed.
 
 ### Step-by-Step Instructions
 
@@ -154,14 +141,13 @@ MNIST/
    ```bash
    git clone https://github.com/gaiusparasa10-hash/MNIST.git
    cd MNIST
-   ```
 
 2. **Create and Activate Virtual Environment**:
    ```bash
-   # On Windows
+     # On Windows
    python -m venv venv
    venv\Scripts\activate
-
+   
    # On macOS/Linux
    python3 -m venv venv
    source venv/bin/activate
@@ -170,53 +156,49 @@ MNIST/
 3. **Install Dependencies**:
    ```bash
    pip install -r requirements.txt
-   ```
+```
 
 4. **Train and Save Model (If model.keras is missing)**:
    ```bash
    python train_model.py
    ```
 
-5. **Run Flask Application**:
+5. **Run the Streamlit Application**:
    ```bash
-   python app.py
+   streamlit run streamlit_app.py
    ```
 
 6. **Open in Browser**:
-   Navigate to `http://127.0.0.1:5000` in your web browser.
+    Navigate to `http://localhost:8501` in your web browser.
 
 ---
 
-## Deployment on Render
-
-This application is fully compatible with **Render Web Services**.
-
-### Exact Render Settings
-
-- **Environment**: Python 3
-- **Build Command**:
-  ```bash
-  pip install -r requirements.txt
-  ```
-- **Start Command**:
-  ```bash
-  gunicorn app:app
-  ```
-
-### Why Port Configuration Matters:
-In `app.py`, the server dynamically binds to the `PORT` environment variable supplied by Render:
-```python
-port = int(os.environ.get("PORT", 5000))
-app.run(host="0.0.0.0", port=port)
-```
+## Deployment
+   
+   This application is deployed using **Streamlit Community Cloud**.
+   
+   ### Live Demo
+   
+   🚀 **[Open Live Demo](https://2pm9xwx3qcruqqxmqh6mtv.streamlit.app/)**
+   
+   The application is connected to the GitHub repository and automatically updates when changes are pushed to the `main` branch.
+   
+   ### Deployment Configuration
+   
+   - **Platform**: Streamlit Community Cloud
+   - **Python Version**: Python 3.13
+   - **Main File**: `streamlit_app.py`
+   - **Dependencies**: `requirements.txt`
+   
+   The deployed application allows users to draw a handwritten digit on an interactive canvas and receive a prediction from the         trained CNN model.
 
 ---
 
 ## Technical Interview Talking Points
 
 - **Why CNN over classical ML (Logistic Regression/KNN)?**
-  - Spatial invariance: CNNs preserve 2D grid structure of image pixels through convolutional filters, making them significantly better at handling shifted or varied handwriting styles compared to flat vector models like Logistic Regression or KNN.
-- **How is image preprocessing handled between Frontend and Backend?**
-  - The canvas renders a high-res 280x280 drawing for smooth UX. The backend resizes this down to 28x28, converts to grayscale, and divides pixel intensities by 255.0 to mirror the exact preprocessing applied during MNIST dataset training.
-- **Why use base64 encoding for image transfer?**
-  - Base64 encoding allows transmitting drawing canvas image data directly as an inline payload over standard JSON HTTP POST requests without writing temporary files to server disk.
+  - Spatial invariance: CNNs preserve 2D grid structure of image pixels through convolutional filters, making them significantly         better at handling shifted or varied handwriting styles compared to flat vector models like Logistic Regression or KNN.
+- **How is image preprocessing handled?**
+  - The drawing canvas captures the handwritten digit as an image. The application converts it to grayscale, finds the digit             boundaries, crops the digit, adds padding, resizes it to 28x28 pixels, and normalizes pixel values to the range 0–1 before           passing it to the CNN model.
+- **Why resize the image to 28x28?**
+  - MNIST images are 28x28 grayscale images, so the user's drawing is resized to the same dimensions expected by the trained CNN         model.
