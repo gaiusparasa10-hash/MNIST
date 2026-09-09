@@ -40,18 +40,63 @@ canvas_result = st_canvas(
     width=280,
     drawing_mode="freedraw",
     key="canvas",
+    return_image_data=True,
 )
 
+col1, col2 = st.columns(2)
 
-if st.button("Predict"):
+with col1:
+    predict_clicked = st.button("Predict")
+
+with col2:
+    clear_clicked = st.button("Clear")
+
+
+if clear_clicked:
+    st.rerun()
+
+
+if predict_clicked:
     try:
-        image = canvas_result.image_data.astype(np.uint8)
+        image = canvas_result.image_data
 
-        # Convert RGBA image to grayscale
-        image = Image.fromarray(image).convert("L")
+        if image is None or np.max(image[:, :, :3]) == 0:
+            st.warning("Please draw a digit first.")
+            st.stop()
+
+        # Convert canvas RGBA image to grayscale
+        image = Image.fromarray(image.astype(np.uint8)).convert("L")
+
+        # Find the bounding box of the handwritten digit
+        image_array = np.array(image)
+
+        rows = np.any(image_array > 20, axis=1)
+        cols = np.any(image_array > 20, axis=0)
+
+        if not rows.any() or not cols.any():
+            st.warning("Please draw a digit first.")
+            st.stop()
+
+        top, bottom = np.where(rows)[0][[0, -1]]
+        left, right = np.where(cols)[0][[0, -1]]
+
+        # Crop the digit
+        image = image.crop((left, top, right + 1, bottom + 1))
+
+        # Add a small border around the digit
+        width, height = image.size
+        padding = int(max(width, height) * 0.2)
+
+        padded = Image.new(
+            "L",
+            (width + padding * 2, height + padding * 2),
+            0
+        )
+
+        padded.paste(image, (padding, padding))
 
         # Resize to MNIST format
-        image = image.resize((28, 28), Image.Resampling.BILINEAR)
+        image = padded.resize((28, 28), Image.Resampling.LANCZOS)
 
         # Normalize pixel values
         img_array = np.array(image, dtype=np.float32) / 255.0
@@ -59,7 +104,7 @@ if st.button("Predict"):
         # Add batch and channel dimensions
         img_tensor = img_array.reshape(1, 28, 28, 1)
 
-        # Prediction
+        # Make prediction
         predictions = model(img_tensor, training=False).numpy()[0]
 
         predicted_digit = int(np.argmax(predictions))
