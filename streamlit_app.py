@@ -29,6 +29,17 @@ except Exception as e:
     st.stop()
 
 
+# Initialize session state
+if "canvas_key" not in st.session_state:
+    st.session_state.canvas_key = 0
+
+if "prediction" not in st.session_state:
+    st.session_state.prediction = None
+
+if "confidence" not in st.session_state:
+    st.session_state.confidence = None
+
+
 st.subheader("Draw a digit")
 
 canvas_result = st_canvas(
@@ -39,9 +50,10 @@ canvas_result = st_canvas(
     height=280,
     width=280,
     drawing_mode="freedraw",
-    key="canvas",
+    key=f"canvas_{st.session_state.canvas_key}",
     return_image_data=True,
 )
+
 
 col1, col2 = st.columns(2)
 
@@ -52,10 +64,15 @@ with col2:
     clear_clicked = st.button("Clear")
 
 
+# Clear canvas and prediction
 if clear_clicked:
+    st.session_state.canvas_key += 1
+    st.session_state.prediction = None
+    st.session_state.confidence = None
     st.rerun()
 
 
+# Predict digit
 if predict_clicked:
     try:
         image = canvas_result.image_data
@@ -83,7 +100,7 @@ if predict_clicked:
         # Crop the digit
         image = image.crop((left, top, right + 1, bottom + 1))
 
-        # Add a small border around the digit
+        # Add padding around the digit
         width, height = image.size
         padding = int(max(width, height) * 0.2)
 
@@ -110,8 +127,15 @@ if predict_clicked:
         predicted_digit = int(np.argmax(predictions))
         confidence = float(np.max(predictions) * 100)
 
-        st.success(f"Prediction: {predicted_digit}")
-        st.info(f"Confidence: {confidence:.1f}%")
+        # Store prediction in session state
+        st.session_state.prediction = predicted_digit
+        st.session_state.confidence = confidence
 
     except Exception as e:
         st.error(f"Prediction error: {e}")
+
+
+# Display prediction result
+if st.session_state.prediction is not None:
+    st.success(f"Prediction: {st.session_state.prediction}")
+    st.info(f"Confidence: {st.session_state.confidence:.1f}%")
