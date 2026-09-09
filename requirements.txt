@@ -1,5 +1,4 @@
-Flask
+streamlit
 tensorflow
 numpy
 Pillow
-gunicorn
