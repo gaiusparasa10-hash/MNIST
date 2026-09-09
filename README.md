@@ -1,6 +1,6 @@
 # MNIST Handwritten Digit Recognition Web Application
 
-🚀 **[Live Demo]([https://2pm9xwx3qcruqxmqh6mtv.streamlit.ap](https://2pm9xwx3qcruqqxmqh6mtv.streamlit.app/)**
+🚀 **[Live Demo]([https://2pm9xwx3qcruqxmqh6mtv.streamlit.ap]**
 
 A simple, beginner-friendly web application that allows users to draw handwritten digits (0–9) on an interactive canvas and get predictions powered by a Convolutional Neural Network (CNN) trained on the MNIST dataset.
 
